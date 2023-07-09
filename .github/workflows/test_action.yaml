@@ -30,8 +30,11 @@ jobs:
             To debug locally, run: `mplat validate-pr`
           "
 
-      - name: Setup Mplat
+      - name: Setup Environment
         uses: alkami/github_actions/.github/composites/environment_setup@test_branch_mskolnick
+
+      - name: Setup Environment
+        run: touch test_file.md
 
       - name: Amend the current commit
         uses: stefanzweifel/git-auto-commit-action@v4

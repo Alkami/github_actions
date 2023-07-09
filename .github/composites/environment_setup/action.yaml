@@ -1,5 +1,5 @@
 name: Setup
-description: Checkout repo and install dependencies for deployment
+description: Checkout repo and install dependencies
 
 runs:
   using: composite
