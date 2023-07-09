@@ -33,7 +33,7 @@ jobs:
       - name: Setup Environment
         uses: alkami/github_actions/.github/composites/environment_setup@test_branch_mskolnick
 
-      - name: Setup Environment
+      - name: Create a file to commit
         run: touch test_file.md
 
       - name: Amend the current commit

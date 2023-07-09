@@ -12,9 +12,9 @@ runs:
         # This ref is required for the mplat cli to be able to validate the commit message (validate-commit) and PR labels on the branch (validate-labels)
         #   otherwise the checkout pulls the merge commit a detached head state
         ref: ${{ github.event.pull_request.head.ref }}
-        # # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
-        # # See https://github.com/stefanzweifel/git-auto-commit-action for more info
-        # fetch-depth: 2
+        # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
+        # The history being overwritten is according to the docs here: https://github.com/stefanzweifel/git-auto-commit-action
+        fetch-depth: 2
 
     - name: Cache Flutter dependencies
       uses: actions/cache@v3
