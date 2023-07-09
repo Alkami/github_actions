@@ -1,6 +1,12 @@
 name: Setup
 description: Checkout repo and install dependencies
 
+inputs:
+  fetch_depth:  # id of input
+    description: 'Fetch depth to pass to checkout'
+    required: false
+    default: '2'
+
 runs:
   using: composite
   steps:
@@ -13,8 +19,8 @@ runs:
         #   otherwise the checkout pulls the merge commit a detached head state
         ref: ${{ github.event.pull_request.head.ref }}
         # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
-        # The history being overwritten is according to the docs here: https://github.com/stefanzweifel/git-auto-commit-action
-        fetch-depth: 2
+        # See more here: https://github.com/stefanzweifel/git-auto-commit-action
+        # fetch-depth: 1
 
     - name: Cache Flutter dependencies
       uses: actions/cache@v3
