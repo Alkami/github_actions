@@ -1,0 +1,83 @@
+env:
+  flutter_version: 3.7.3
+  # Using the GH_ACTIONS_PAT so that it can bypass branch protection PR requirement
+  # Info of how this works: https://stackoverflow.com/questions/69263843/how-to-push-to-protected-main-branches-in-a-github-actionv
+  GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    # *** This if check is very important ***
+    # We use this to make sure that we do not get into an infinite loop of workflow runs triggered by a push.
+    if: github.event.pusher.name != 'alkami-svc-github-circle'
+    name: Publish Package - Reusable
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Print Command Summary
+        run: |
+          echo "
+          Publishes package
+
+          1. Bump version if current version is published
+          2. Update changelog
+          3. Publish package to Cloudsmith
+          4. Create GitHub release (also makes a tag)
+          5. If merging to main -> Create and push a hotfix branch 
+                in case this version needs to be hotfixed in the future
+
+          A diagram of the flow can be found here: https://confluence.alkami.com/x/3jdME
+          "
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
+          # See https://github.com/stefanzweifel/git-auto-commit-action for more info
+          fetch-depth: 2
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.flutter_version }}
+          cache: true
+
+      - name: Authorize Cloudsmith
+        run:  echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
+
+      - name: Git Config Update
+        run: git config --global url."https://x-token-auth:${{ secrets.GH_ACTIONS_PAT }}@github.com".InsteadOf https://github.com
+
+      - name: Activate mplat
+        run: |
+          dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
+        # dart pub global activate mplat \
+        #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+      
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Version package
+        run: mplat version
+
+      - name: Update Changelog
+        run: mplat update-changelog
+
+      - name: Get last commit message for next step
+        id: last-commit-message
+        run: |
+          echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
+
+      - name: Amend the current commit with the updated version and changelog
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: ${{ steps.last-commit-message.outputs.msg }}
+          commit_options: --amend --no-edit
+          push_options: --force
+          skip_fetch: true
+
+      - name: Publish package
+        run: mplat publish

@@ -1,0 +1,67 @@
+env:
+  flutter_version: 3.7.3
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Respond to app-foundation tag - Reusable
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Print Command Summary
+        run: |
+          echo "
+          Respond to a tag in app-foundation by doing the following
+
+          1. Tag this commit with an "app-foundation-\<version\>" eg: "app-foundation-4000.0.0"
+          2. Create a hotfix branch from this commit in case this version needs to be hotfixed in the future
+
+          A diagram of the flow can be found here: https://confluence.alkami.com/x/3jdME
+          "
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.flutter_version }}
+          cache: true
+
+      - name: Authorize Cloudsmith
+        run:  echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
+
+      - name: Git Config Update
+        run: git config --global url."https://x-token-auth:${{ secrets.GH_ACTIONS_PAT }}@github.com".InsteadOf https://github.com
+
+      - name: Activate mplat
+        run: |
+          dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
+        # dart pub global activate mplat \
+        #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+
+      - name: Tag package with app-foundation version app-foundation-v${{ inputs.app_foundation_version }}
+        # This app_foundation_version param is passed in by the GH action which triggered this flow in app-foundation
+        run: |
+          tag_name=app-foundation-v${{ inputs.app_foundation_version }}
+          echo "tag_name: $tag_name"
+          git tag $tag_name
+          git push origin $tag_name
+
+      - name: Make a hotfix branch in this package with an updated version
+        run: mplat admin branch package-hotfix-branch
+
+      - name: Set git config to auto-push remote in next step
+        run: git config push.autoSetupRemote true
+
+      - name: Commit the changes to the new hotfix branch
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'switch to hotfix versioning for hotfix branch'
+          skip_dirty_check: true
+          skip_fetch: true
