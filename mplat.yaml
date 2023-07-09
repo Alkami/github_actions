@@ -1,0 +1,4 @@
+validate-pr:
+  test: false
+  publish-dry-run: false
+  validate-version: false
