@@ -9,5 +9,5 @@ on:
 jobs:
   build:
     name: Validate Pull Request is Ready for Merge
-    uses: alkami/github_actions/.github/workflows/reusable_pr_validation.yaml@main
+    uses: alkami/github_actions/.github/workflows/reusable_pr_validation.yaml@test_branch_mskolnick
     secrets: inherit

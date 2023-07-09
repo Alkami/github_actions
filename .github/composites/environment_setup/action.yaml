@@ -1,0 +1,44 @@
+name: Setup
+description: Checkout repo and install dependencies for deployment
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        token: ${{ env.GITHUB_TOKEN }}
+        persist-credentials: true
+        # This ref is required for the mplat cli to be able to validate the commit message (validate-commit) and PR labels on the branch (validate-labels)
+        #   otherwise the checkout pulls the merge commit a detached head state
+        ref: ${{ github.event.pull_request.head.ref }}
+        # # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
+        # # See https://github.com/stefanzweifel/git-auto-commit-action for more info
+        # fetch-depth: 2
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v3
+      with:
+        path: /opt/hostedtoolcache/flutter
+        key: ${{ env.FLUTTER_VERSION }}-flutter
+
+    - name: Install Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+
+    - name: Authorize Cloudsmith
+      shell: bash
+      run: echo ${{ env.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
+
+    - name: Git Config Update
+      shell: bash
+      run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
+    
+    - name: Activate mplat
+      shell: bash
+      run: |
+        dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
+      # dart pub global activate mplat \
+      #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/

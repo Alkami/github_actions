@@ -1,13 +1,20 @@
 env:
   FLUTTER_VERSION: 3.7.3
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
   CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
+      - hotfix/**
+      - test_branch_mskolnick
 
 jobs:
   build:
+    # *** This if check is very important ***
+    # We use this to make sure that we do not get into an infinite loop of workflow runs triggered by a push.
+    if: github.event.pusher.name != 'alkami-svc-github-circle'
     name: Validate PR is Ready for Merge - Reusable
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -24,10 +31,13 @@ jobs:
           "
 
       - name: Setup Mplat
-        uses: alkami/github_actions/.github/composites/mplat_setup@main
+        uses: alkami/github_actions/.github/composites/environment_setup@test_branch_mskolnick
 
-      - name: Pub get
-        run: flutter pub get
+      - name: Amend the current commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: ${{ steps.last-commit-message.outputs.msg }}
+          commit_options: --amend --no-edit
+          push_options: --force
+          skip_fetch: true
 
-      - name: Validate PR is ready
-        run: mplat validate-pr
