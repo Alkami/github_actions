@@ -35,7 +35,7 @@ jobs:
         run: git config --global url."https://x-token-auth:${{ secrets.GH_ACTIONS_PAT }}@github.com".InsteadOf https://github.com
 
       - name: Authorize Cloudsmith
-        run:  echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
+        run: echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
 
       - name: Activate mplat
         run: |
