@@ -24,17 +24,16 @@ runs:
       uses: actions/checkout@v3
       with:
         token: ${{ env.GITHUB_TOKEN }}
-        persist-credentials: true
         # This ref is required for the mplat cli to be able to validate the commit message (validate-commit) and PR labels on the branch (validate-labels)
         #   otherwise the checkout pulls the merge commit a detached head state
         ref: ${{ github.event.pull_request.head.ref }}
         # Fetch depth here is important. (Fetching just 1 commit would overwrite the whole history when force ammending a commit)
         fetch-depth: ${{ inputs.fetch-depth }}
 
-    # - uses: oleksiyrudenko/gha-git-credentials@v2-latest
-    #   with:
-    #     global: false
-    #     token: '${{ secrets.GH_ACTIONS_PAT }}'
+    - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      with:
+        global: false
+        token: ${{ env.GITHUB_TOKEN }}
 
     - name: Cache Flutter dependencies
       uses: actions/cache@v3
