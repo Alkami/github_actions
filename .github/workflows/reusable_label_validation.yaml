@@ -1,6 +1,7 @@
 env:
-  flutter_version: 3.7.3
+  FLUTTER_VERSION: 3.7.3
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
 
 on:
   workflow_call:
@@ -17,31 +18,11 @@ jobs:
           echo "
           Command Summary:
           Validates that the PR does not contain any prohibited labels such as 'DO NOT MERGE'
+          The prohibited labels can be modified in the mplat.yaml file of this repository
           "
-      - uses: actions/checkout@v3
-        with:
-          persist-credentials: true
-          # This ref is required for the GH cli to be able to find which branch it is on
-          #   otherwise the checkout pulls code in a detached head state
-          ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter_version }}
-          cache: true
-
-      - name: Git Config Update
-        run: git config --global url."https://x-token-auth:${{ secrets.GH_ACTIONS_PAT }}@github.com".InsteadOf https://github.com
-
-      - name: Authorize Cloudsmith
-        run: echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
-
-      - name: Activate mplat
-        run: |
-          dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
-        # dart pub global activate mplat \
-        #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+      - name: Setup Alkami Environment 
+        uses: alkami/github_actions/.github/composites/environment_setup@main
 
       - name: Validate PR Labels
         run: mplat validate-labels

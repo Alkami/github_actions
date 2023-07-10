@@ -19,6 +19,7 @@ jobs:
           1. Cycles through commit messages on PR and pulls out Jira Tickets
           2. Links the PR to the Jira tickets so that it is in the jira ticket links
           "
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
