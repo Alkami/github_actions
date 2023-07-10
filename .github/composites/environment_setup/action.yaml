@@ -10,6 +10,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Verify Inputs - Fetch depth must be 2 or 0 so commit/push does not overwrite entire history
+      shell: bash
+      run: |
+        if [ ${{ inputs.fetch_depth }} != "2" && ${{ inputs.fetch_depth }} != "0"]; then
+          echo "fetch_depth must be 2 or 0 so that commit/push does not overwrite entire branch history"
+          exit 1
+         else
+          echo "fetch_depth is a valid value of ${{ inputs.fetch_depth }}"
+        fi
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -20,7 +30,7 @@ runs:
         ref: ${{ github.event.pull_request.head.ref }}
         # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
         # See more here: https://github.com/stefanzweifel/git-auto-commit-action
-        # fetch-depth: 1
+        fetch-depth: 2
 
     - name: Cache Flutter dependencies
       uses: actions/cache@v3

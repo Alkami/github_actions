@@ -1,5 +1,6 @@
 env:
-  flutter_version: 3.7.3
+  FLUTTER_VERSION: 3.7.3
+  CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
   # Using the GH_ACTIONS_PAT so that it can bypass branch protection PR requirement
   # Info of how this works: https://stackoverflow.com/questions/69263843/how-to-push-to-protected-main-branches-in-a-github-actionv
   GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
@@ -31,31 +32,9 @@ jobs:
 
           A diagram of the flow can be found here: https://confluence.alkami.com/x/3jdME
           "
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          token: ${{ env.GITHUB_TOKEN }}
-          # Fetch the last 2 commits instead of just 1. (Fetching just 1 commit would overwrite the whole history when using stefanzweifel/git-auto-commit-action@v4)
-          # See https://github.com/stefanzweifel/git-auto-commit-action for more info
-          fetch-depth: 2
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter_version }}
-          cache: true
-
-      - name: Authorize Cloudsmith
-        run:  echo ${{ secrets.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
-
-      - name: Git Config Update
-        run: git config --global url."https://x-token-auth:${{ secrets.GH_ACTIONS_PAT }}@github.com".InsteadOf https://github.com
-
-      - name: Activate mplat
-        run: |
-          dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
-        # dart pub global activate mplat \
-        #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+      - name: Setup Mplat
+        uses: alkami/github_actions/.github/composites/mplat_setup@main
       
       - name: Pub get
         run: flutter pub get
@@ -66,18 +45,14 @@ jobs:
       - name: Update Changelog
         run: mplat update-changelog
 
-      - name: Get last commit message for next step
-        id: last-commit-message
+      - name: Commit changes
         run: |
-          echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
-
-      - name: Amend the current commit with the updated version and changelog
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: ${{ steps.last-commit-message.outputs.msg }}
-          commit_options: --amend --no-edit
-          push_options: --force
-          skip_fetch: true
+          echo "NOTE* If you amend the commit and force push you must have a checkout fetch depth of 0 or at least 2. Otherwise the entire git history will be re-written."
+          git config user.name "alkami-svc-github-circle"
+          git config user.email "alkami-svc-github-circle@users.noreply.github.com"
+          git add -A
+          git commit -v --no-edit --amend
+          git push --force
 
       - name: Publish package
         run: mplat publish
