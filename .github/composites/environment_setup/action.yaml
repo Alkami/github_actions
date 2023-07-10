@@ -43,7 +43,7 @@ runs:
 
     - name: Install Cloudsmith CLI
       if: ${{ inputs.install-cloudsmith-cli == 'true' }}
-      uses: alkami/github_actions/.github/composites/install_cloudsmith_cli@test_branch_mskolnick-2
+      uses: alkami/github_actions/.github/composites/install_cloudsmith_cli@main
 
     # Authenticates git with the github credentials. Allows us to fetch repositories/push etc
     - uses: oleksiyrudenko/gha-git-credentials@v2-latest
@@ -67,14 +67,14 @@ runs:
       shell: bash
       run: echo ${{ env.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
 
-    # Updates the git config to allow us to use https github requests
-    - name: Git Config Update
-      shell: bash
-      run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
+    # Updates the git config to allow us to use https github requests (useful when installing mplat directly from github)
+    # - name: Git Config Update
+    #   shell: bash
+    #   run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
     
     - name: Activate mplat
       shell: bash
       run: |
-        dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
-      # dart pub global activate mplat \
-      #   --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+        dart pub global activate mplat \
+          --hosted-url https://dart.cloudsmith.io/alkami/flutter/
+      # dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
