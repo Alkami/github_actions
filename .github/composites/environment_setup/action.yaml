@@ -2,7 +2,7 @@ name: Setup
 description: Checkout repo and install dependencies
 
 inputs:
-  fetch_depth:  # id of input
+  fetch-depth:  # id of input
     description: 'Fetch depth to pass to checkout'
     required: false
     default: '2'
@@ -13,11 +13,11 @@ runs:
     - name: Verify Inputs - Fetch depth must be 2 or 0 so commit/push does not overwrite entire history
       shell: bash
       run: |
-        if [ ${{ inputs.fetch_depth }} == "1" ]; then
-          echo "fetch_depth must never be 1 so that commit/push does not overwrite entire branch history. "
+        if [ ${{ inputs.fetch-depth }} == "1" ]; then
+          echo "fetch-depth must never be 1 so that commit/push does not overwrite entire branch history. "
           exit 1
          else
-          echo "fetch_depth is a valid value of ${{ inputs.fetch_depth }}"
+          echo "fetch-depth is a valid value of ${{ inputs.fetch-depth }}"
         fi
 
     - name: Checkout
@@ -29,7 +29,7 @@ runs:
         #   otherwise the checkout pulls the merge commit a detached head state
         ref: ${{ github.event.pull_request.head.ref }}
         # Fetch depth here is important. (Fetching just 1 commit would overwrite the whole history when force ammending a commit)
-        fetch-depth: ${{ inputs.fetch_depth }}
+        fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache Flutter dependencies
       uses: actions/cache@v3
