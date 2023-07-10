@@ -30,6 +30,7 @@ runs:
         # Fetch depth here is important. (Fetching just 1 commit would overwrite the whole history when force ammending a commit)
         fetch-depth: ${{ inputs.fetch-depth }}
 
+    # Authenticates git with the github credentials. Allows us to fetch repositories/push etc
     - uses: oleksiyrudenko/gha-git-credentials@v2-latest
       with:
         global: false
@@ -51,6 +52,7 @@ runs:
       shell: bash
       run: echo ${{ env.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
 
+    # Updates the git config to allow us to use https github requests
     - name: Git Config Update
       shell: bash
       run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
