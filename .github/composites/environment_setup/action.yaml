@@ -2,10 +2,15 @@ name: Setup
 description: Checkout repo and install dependencies
 
 inputs:
-  fetch-depth:  # id of input
-    description: 'Fetch depth to pass to checkout'
-    required: false
+  fetch-depth:
+    description: Fetch depth to pass to checkout
     default: '2'
+  install-cloudsmith-cli:
+    description: Fetch depth to pass to checkout
+    default: 'false'
+  use-git-lfs:
+    description: Whether to install and activate Git LFS
+    default: 'false'
 
 runs:
   using: composite
@@ -29,6 +34,16 @@ runs:
         ref: ${{ github.event.pull_request.head.ref }}
         # Fetch depth here is important. (Fetching just 1 commit would overwrite the whole history when force ammending a commit)
         fetch-depth: ${{ inputs.fetch-depth }}
+        lfs: ${{ inputs.use-git-lfs }}
+
+    - name: Checkout LFS objects
+      if: ${{ inputs.use-git-lfs == 'true' }}
+      shell: bash
+      run: git lfs checkout
+
+    - name: Install Cloudsmith CLI
+      if: ${{ inputs.install-cloudsmith-cli == 'true' }}
+      uses: alkami/github_actions/.github/composites/install_cloudsmith_cli@test_branch_mskolnick-2
 
     # Authenticates git with the github credentials. Allows us to fetch repositories/push etc
     - uses: oleksiyrudenko/gha-git-credentials@v2-latest

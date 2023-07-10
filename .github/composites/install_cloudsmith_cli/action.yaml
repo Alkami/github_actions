@@ -1,0 +1,18 @@
+name: Install Cloudsmith CLI
+description: Install Python and Cloudsmith CLI
+
+runs:
+  using: composite
+  steps:
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Cloudsmith CLI
+      shell: bash
+      run: pip3 install --upgrade --ignore-installed cloudsmith-cli
+
+    - name: Run Cloudsmith CLI
+      shell: bash
+      run: cloudsmith --version
