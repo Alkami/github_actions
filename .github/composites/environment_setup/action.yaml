@@ -11,6 +11,9 @@ inputs:
   use-git-lfs:
     description: Whether to install and activate Git LFS
     default: 'false'
+  run-checkout:
+    description: Whether to check out code before setup. This is useful to disable when running composite actions inside a workflow
+    default: 'true'
 
 runs:
   using: composite
@@ -26,6 +29,7 @@ runs:
         fi
 
     - name: Checkout
+      if: ${{ inputs.run-checkout == 'true' }}
       uses: actions/checkout@v3
       with:
         token: ${{ env.GITHUB_TOKEN }}
