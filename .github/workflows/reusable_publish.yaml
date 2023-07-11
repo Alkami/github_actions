@@ -45,13 +45,15 @@ jobs:
       - name: Update Changelog
         run: mplat update-changelog
 
-      - name: Commit changes
+      - name: Commit and push changes
+        # The --author in the commit is so that the commit still shows up as the author who merged the code
+        # otherwise all of our commits would show alkami-svc-github-circle as the author
         run: |
           echo "NOTE* If you amend the commit and force push you must have a checkout fetch depth of 0 or at least 2. Otherwise the entire git history will be re-written."
           git config user.name "alkami-svc-github-circle"
           git config user.email "alkami-svc-github-circle@users.noreply.github.com"
           git add -A
-          git commit -v --no-edit --amend
+          git commit -v --no-edit --amend --author="${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
           git push --force
 
       - name: Publish package
