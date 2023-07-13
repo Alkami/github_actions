@@ -1,0 +1,37 @@
+env:
+  FLUTTER_VERSION: 3.7.3
+  GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PAT }}
+  CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+
+on:
+  push:
+    branches:
+      - test_branch_mskolnick-5
+  pull_request:
+    branches:
+      - test_branch_mskolnick-5
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Setup Alkami Environment 
+        uses: alkami/github_actions/.github/composites/environment_setup@main
+
+      - run: git --no-pager log -1 --skip 1 --pretty=%B
+      - run: git --no-pager log -1 --pretty=%B
+
+      - name: Git Config Update
+        shell: bash
+        run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
+      
+      - name: Activate mplat
+        shell: bash
+        run: |
+          dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref fix/mskolnick/DEV-156308-ensure-only-one-commit
+
+      - name: Activate mplat
+        shell: bash
+        run: mplat validate-commit
