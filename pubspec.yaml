@@ -1,0 +1,5 @@
+name: github_actions
+description: This pubspec.yaml file only exists so PR validation can pass successfully. This is not a flutter project
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"

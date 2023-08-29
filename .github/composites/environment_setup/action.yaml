@@ -6,7 +6,7 @@ inputs:
     description: Fetch depth to pass to checkout
     default: '2'
   install-cloudsmith-cli:
-    description: Fetch depth to pass to checkout
+    description: Whether to install Python and Cloudsmith CLI
     default: 'false'
   use-git-lfs:
     description: Whether to install and activate Git LFS
@@ -81,4 +81,4 @@ runs:
       run: |
         dart pub global activate mplat \
           --hosted-url https://dart.cloudsmith.io/alkami/flutter/
-      # dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref feat/mskolnick/DEV-156308-auto-version-on-publish
+      # dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref chore/mskolnick/DEV-159156-count-commits-on-PR
