@@ -14,6 +14,8 @@ inputs:
   run-checkout:
     description: Whether to check out code before setup. This is useful to disable when running composite actions inside a workflow
     default: 'true'
+  mplat-branch-override:
+    description: When you are testing changes in mplat. Use this to override the installed version of mplat to point to a git branch instead of installing the latest from Cloudsmith
 
 runs:
   using: composite
@@ -71,14 +73,25 @@ runs:
       shell: bash
       run: echo ${{ env.CLOUDSMITH_API_KEY }} | dart pub token add https://dart.cloudsmith.io/alkami/flutter/
 
+    # Install from Github if 'mplat-branch-override' was passed in
     # Updates the git config to allow us to use https github requests (useful when installing mplat directly from github)
-    # - name: Git Config Update
-    #   shell: bash
-    #   run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
+    - name: Git Config Update
+      if: ${{ inputs.mplat-branch-override != '' }}
+      shell: bash
+      run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
     
-    - name: Activate mplat
+    # Install from Github if 'mplat-branch-override' was passed in
+    - name: Activate mplat from Github branch 
+      if: ${{ inputs.mplat-branch-override != '' }}
+      shell: bash
+      run: |
+        dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git \
+          --git-ref ${{ inputs.mplat-branch-override }}
+      
+    # Install from Cloudsmith if no 'mplat-branch-override' was passed in
+    - name: Activate mplat from Cloudsmith
+      if: ${{ inputs.mplat-branch-override == '' }}
       shell: bash
       run: |
         dart pub global activate mplat \
           --hosted-url https://dart.cloudsmith.io/alkami/flutter/
-      # dart pub global activate --source git https://github.com/Alkami/mobile_platform_cli.git --git-ref chore/mskolnick/DEV-159156-count-commits-on-PR
