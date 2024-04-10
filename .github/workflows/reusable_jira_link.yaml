@@ -21,7 +21,7 @@ jobs:
           "
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -33,7 +33,7 @@ jobs:
           echo "github.event.after: ${{ github.event.after }}"
           echo "MSG: $MSG"
           
-          PATTERN=DEV-[0-9]*
+          PATTERN=DEV-[X0-9].*
           JIRA_ISSUES=""
           for word in $MSG; do
           if [[ $word =~ $PATTERN ]]; then
@@ -43,7 +43,7 @@ jobs:
           done
 
           if [ -z "$JIRA_ISSUES" ]; then
-            echo "ERROR: No Jira issue found.  You must include a Jira issue in the comments of your commit."
+            echo "ERROR: No valid Jira issue found. You must include a Jira issue in the comments of your commit."
             exit 1
           fi
           
@@ -78,45 +78,63 @@ jobs:
           
           #  Parse the Jira issue from the branch name by matching "DEV-"
           #BRANCH=${GITHUB_HEAD_REF}
-          PATTERN=[a-zA-Z0-9,\.\_\-]+-[0-9]+
+          PATTERN=[a-zA-Z0-9,\.\_\-]+-[X0-9]+
           
           echo "env.JIRA_ISSUES: ${{env.COMMIT_MESSAGES}}"
           
           for word in ${{env.JIRA_ISSUES}}; do
-          echo "Looking at word: $word"
-          if [[ $word =~ $PATTERN ]]; then
-          echo "found a match"
-          ISSUE=$BASH_REMATCH
-          echo Attempting to post link to issue: $ISSUE
+            echo "Looking at word: $word"
+            if [[ $word =~ $PATTERN ]]; then
+              echo "found a match"
+              ISSUE=$BASH_REMATCH
+              echo Attempting to post link to issue: $ISSUE
 
-          echo Repository name: $GITHUB_REPOSITORY
-          
+              echo Repository name: $GITHUB_REPOSITORY
+              
+          # Script indentation requires EOF calls to be at the beginning
+          # of the line with no whitespace preceding, so leave this poorly indented
+          # and also note the "beginning" of the line is the "run" block above as this
+          # block gets transpiled from yaml to shellscript
           generate_post_data()
           {
           cat <<EOF
-              {
-              "globalId": "${ISSUE}_${PR_NUM}",
-              "object": {
-                  "url": "$PR_URL",
-                  "title": "PR #$PR_NUM in $GITHUB_REPOSITORY",
-                  "summary": "Submitted by ${{ github.actor }}",
-                  "icon": {
-                      "url16x16": "https://cdn4.iconfinder.com/data/icons/iconsimple-logotypes/512/github-512.png",
-                      "title": "GitHub"
+          {
+            "globalId": "${ISSUE}_${PR_NUM}",
+            "object": {
+                "url": "$PR_URL",
+                "title": "PR #$PR_NUM in $GITHUB_REPOSITORY",
+                "summary": "Submitted by ${{ github.actor }}",
+                "icon": {
+                    "url16x16": "https://cdn4.iconfinder.com/data/icons/iconsimple-logotypes/512/github-512.png",
+                    "title": "GitHub"
                 }
             }
           }
           EOF
           }
-          
-          JIRA_LINK_URL=$BASE_URL/issue/$ISSUE/remotelink
-          echo POSTING to $JIRA_LINK_URL
-          echo $(generate_post_data)
-          curl --location --request POST "$JIRA_LINK_URL" \
-          --header "Accept: application/json" \
-          --header "Content-Type: application/json" \
-          --header "Authorization: Bearer ${{ secrets.JIRA_TOKEN }}" \
-          --data "$(generate_post_data)"
-          
-          fi
+              
+              JIRA_LINK_URL=$BASE_URL/issue/$ISSUE/remotelink
+              echo POSTING to $JIRA_LINK_URL
+              echo $(generate_post_data)
+              JIRA_RESPONSE=$(curl --location --request POST "$JIRA_LINK_URL" \
+                --header "Accept: application/json" \
+                --header "Content-Type: application/json" \
+                --header "Authorization: Bearer ${{ secrets.JIRA_TOKEN }}" \
+                --data "$(generate_post_data)")
+              
+              echo "JIRA_RESPONSE: $JIRA_RESPONSE"
+              if [[ $JIRA_RESPONSE == *"errorMessages"* ]]; then
+                if [[ $JIRA_RESPONSE == *"Issue Does Not Exist"* ]]; then
+                  if [[ $ISSUE == *"DEV-XXXXXX"* ]]; then
+                    echo "JIRA ticket override detected, bypassing JIRA link requirement"
+                  else
+                    echo "Issue $ISSUE was not found on JIRA, if this was intentional, use ticket number DEV-XXXXXX to bypass this check"
+                    exit 1
+                  fi
+                else
+                  echo "Error linking JIRA ticket: $JIRA_RESPONSE"
+                  exit 1
+                fi
+              fi
+            fi
           done
