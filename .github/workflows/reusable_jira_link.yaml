@@ -125,10 +125,10 @@ jobs:
               echo "JIRA_RESPONSE: $JIRA_RESPONSE"
               if [[ $JIRA_RESPONSE == *"errorMessages"* ]]; then
                 if [[ $JIRA_RESPONSE == *"Issue Does Not Exist"* ]]; then
-                  if [[ $ISSUE == *"DEV-XXXXXX"* ]]; then
+                  if [[ $ISSUE == *"DEV-1234"* ]]; then
                     echo "JIRA ticket override detected, bypassing JIRA link requirement"
                   else
-                    echo "Issue $ISSUE was not found on JIRA, if this was intentional, use ticket number DEV-XXXXXX to bypass this check"
+                    echo "Issue $ISSUE was not found on JIRA, if this was intentional, use ticket number DEV-1234 to bypass this check"
                     exit 1
                   fi
                 else
