@@ -1,5 +1,5 @@
 env:
-  FLUTTER_VERSION: 3.7.3
+  FLUTTER_VERSION: 3.19.6
   CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
   # Using the GH_ACTIONS_PAT so that it can bypass branch protection PR requirement
   # Info of how this works: https://stackoverflow.com/questions/69263843/how-to-push-to-protected-main-branches-in-a-github-actionv
