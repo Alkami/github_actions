@@ -29,5 +29,8 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      - name: Validate PR is ready
-        run: mplat validate-pr
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Validate Tests
+        run: mplat test
