@@ -76,7 +76,6 @@ runs:
     # Install from Github if 'mplat-branch-override' was passed in
     # Updates the git config to allow us to use https github requests (useful when installing mplat directly from github)
     - name: Git Config Update
-      if: ${{ inputs.mplat-branch-override != '' }}
       shell: bash
       run: git config --global url."https://x-token-auth:${{ env.GITHUB_TOKEN }}@github.com".InsteadOf https://github.com
     

@@ -24,10 +24,13 @@ jobs:
           "
 
       - name: Setup Alkami Environment 
-        uses: alkami/github_actions/.github/composites/environment_setup@main
+        uses: alkami/github_actions/.github/composites/environment_setup@feature-branch-analyze-and-test
 
       - name: Pub get
         run: flutter pub get
 
-      - name: Validate PR is ready
-        run: mplat validate-pr
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Validate Tests
+        run: mplat test
