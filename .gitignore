@@ -1,2 +1,6 @@
 pubspec.lock
 .dart_tool
+
+*.ipr
+*.iws
+.idea/
