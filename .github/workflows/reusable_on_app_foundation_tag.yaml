@@ -19,7 +19,6 @@ jobs:
           Respond to a tag in app-foundation by doing the following
 
           1. Tag this commit with an "app-foundation-\<version\>" eg: "app-foundation-4000.0.0"
-          2. Create a hotfix branch from this commit in case this version needs to be hotfixed in the future
 
           A diagram of the flow can be found here: https://confluence.alkami.com/x/3jdME
           "
@@ -34,16 +33,3 @@ jobs:
           echo "tag_name: $tag_name"
           git tag $tag_name
           git push origin $tag_name
-
-      - name: Make a hotfix branch in this package with an updated version
-        run: mplat admin branch package-hotfix-branch
-
-      - name: Commit and push changes
-        run: |
-          echo "NOTE* If you amend the commit and force push you must have a checkout fetch depth of 0 or at least 2. Otherwise the entire git history will be re-written."
-          git config user.name "alkami-svc-github-circle"
-          git config user.email "alkami-svc-github-circle@users.noreply.github.com"
-          git add -A
-          git commit -m "switch to hotfix versioning for hotfix branch"
-          git config push.autoSetupRemote true
-          git push -u
