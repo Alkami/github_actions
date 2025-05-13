@@ -26,7 +26,7 @@ jobs:
       - name: Setup Alkami Environment 
         uses: alkami/github_actions/.github/composites/environment_setup@main
         with:
-          mplat-branch-override: feat/upgrade-to-flutter-3-29-3
+          mplat-branch-override: enh/upgrade-to-flutter-3-29
 
       - name: Pub get
         run: flutter pub get
