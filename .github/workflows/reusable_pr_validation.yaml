@@ -24,7 +24,7 @@ jobs:
           "
 
       - name: Setup Alkami Environment 
-        uses: alkami/github_actions/.github/composites/environment_setup@main
+        uses: alkami/github_actions/.github/composites/environment_setup@flutter-3-24-5
 
       - name: Pub get
         run: flutter pub get
