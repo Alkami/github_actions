@@ -93,5 +93,5 @@ runs:
       if: ${{ inputs.mplat-branch-override == '' }}
       shell: bash
       run: |
-        dart pub global activate mplat \
+        dart pub global activate mplat 2.39.0 \
           --hosted-url https://dart.cloudsmith.io/alkami/flutter/
